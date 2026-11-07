@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>CONNECT MEET</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Manrope:wght@400;500;700&display=swap">
+<style>
+:root{
+  --bg:#05060f; --fg:#eef0ff; --muted:#8a8fb0;
+  --mint:#3cf2b0; --blue:#2ec8ff; --violet:#8b5cff; --pink:#ff6fb5; --red:#ff6b7a;
+  --glass:rgba(255,255,255,.05); --line:rgba(255,255,255,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--fg);font-family:Manrope,system-ui,sans-serif;min-height:100%}
+body{overflow-x:hidden}
+.sky{position:fixed;inset:0 0 auto 0;height:60vh;pointer-events:none;z-index:0;overflow:hidden;
+  -webkit-mask-image:linear-gradient(#000 30%,transparent);mask-image:linear-gradient(#000 30%,transparent)}
+.blob{position:absolute;width:60vw;height:40vh;border-radius:50%;filter:blur(60px);mix-blend-mode:screen;opacity:.55}
+.b1{background:var(--mint);left:-10vw;top:-10vh;animation:f1 18s ease-in-out infinite alternate}
+.b2{background:var(--blue);right:-15vw;top:-5vh;animation:f2 22s ease-in-out infinite alternate}
+.b3{background:var(--violet);left:20vw;top:5vh;animation:f3 26s ease-in-out infinite alternate}
+.b4{background:var(--pink);right:5vw;top:15vh;opacity:.35;animation:f4 20s ease-in-out infinite alternate}
+@keyframes f1{to{transform:translate(25vw,8vh) scale(1.2)}}
+@keyframes f2{to{transform:translate(-20vw,10vh) scale(.9)}}
+@keyframes f3{to{transform:translate(-15vw,-6vh) scale(1.3)}}
+@keyframes f4{to{transform:translate(-25vw,-8vh) scale(1.1)}}
+.app{position:relative;z-index:1;max-width:480px;margin:0 auto;padding:18px 16px calc(100px + env(safe-area-inset-bottom))}
+.logo{font-family:Unbounded,sans-serif;font-weight:700;font-size:20px;letter-spacing:.3em;text-align:center;margin:6px 0 4px;
+  background:linear-gradient(90deg,var(--mint),var(--blue),var(--violet),var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent}
+.test{text-align:center;color:var(--muted);font-size:11px;letter-spacing:.08em;margin-bottom:18px}
+h1{font-family:Unbounded,sans-serif;font-weight:700;font-size:22px;line-height:1.25;margin:6px 0 10px}
+h2{font-family:Unbounded,sans-serif;font-weight:500;font-size:15px;margin:22px 0 12px}
+p.sub{color:var(--muted);font-size:14px;line-height:1.5}
+.card{background:var(--glass);border:1px solid var(--line);border-radius:24px;padding:18px;
+  -webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+.card+.card{margin-top:12px}
+.balance{position:relative;overflow:hidden;text-align:center;padding:26px 18px}
+.balance::before{content:"";position:absolute;inset:-50%;
+  background:conic-gradient(from 0deg,var(--mint),var(--blue),var(--violet),var(--pink),var(--mint));
+  opacity:.18;animation:spin 14s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.balance>*{position:relative}
+.lbl{color:var(--muted);font-size:13px}
+.big{font-family:Unbounded,sans-serif;font-weight:700;font-size:58px;line-height:1.1;margin:4px 0}
+.big small{font-size:18px;color:var(--mint);margin-left:6px}
+.btn{display:block;width:100%;border:0;border-radius:18px;padding:15px;font:700 15px Manrope,sans-serif;cursor:pointer;
+  background:linear-gradient(90deg,var(--mint),var(--blue),var(--violet));color:#05060f;
+  box-shadow:0 8px 30px rgba(60,242,176,.22);margin-top:12px}
+.btn.ghost{background:var(--glass);color:var(--fg);border:1px solid var(--line);box-shadow:none}
+.btn.small{display:inline-block;width:auto;padding:10px 14px;font-size:13px;margin:0;border-radius:14px}
+.btn:disabled{opacity:.5}
+.btn:active{transform:scale(.98)}
+label{display:block;font-size:13px;color:var(--muted);margin:14px 0 6px}
+input,textarea{width:100%;padding:13px 14px;border-radius:14px;border:1px solid var(--line);background:rgba(0,0,0,.35);
+  color:var(--fg);font:500 16px Manrope,sans-serif;outline:none}
+input:focus,textarea:focus{border-color:var(--mint)}
+textarea{min-height:80px;resize:vertical}
+.photo-pick{display:grid;place-items:center;width:180px;height:220px;margin:6px auto;border-radius:24px;border:1.5px dashed var(--line);
+  background:var(--glass) center/cover no-repeat;color:var(--muted);font-size:14px;text-align:center;cursor:pointer;overflow:hidden}
+.status{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;font-size:13px;font-weight:700}
+.st-pending{background:rgba(46,200,255,.12);color:var(--blue)}
+.st-approved{background:rgba(60,242,176,.12);color:var(--mint)}
+.st-rejected{background:rgba(255,107,122,.12);color:var(--red)}
+.st-none{background:var(--glass);color:var(--muted)}
+.person{display:flex;gap:14px;align-items:center}
+.ph{width:64px;height:64px;border-radius:20px;flex:none;background:linear-gradient(135deg,var(--mint),var(--violet)) center/cover no-repeat;
+  display:grid;place-items:center;font-weight:700;font-size:22px;color:#05060f}
+.ph.lg{width:96px;height:96px;border-radius:28px;font-size:34px}
+.person .t{flex:1;min-width:0}
+.person .n{font-weight:700;font-size:16px}
+.person .d{color:var(--muted);font-size:13px;margin-top:2px}
+.person .ab{font-size:13px;margin-top:6px;opacity:.85;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.tagline{font-size:12px;color:var(--muted);margin-top:10px;text-align:right}
+.row2{display:flex;gap:8px;margin-top:12px}.row2 .btn{flex:1;margin:0}
+.empty{color:var(--muted);text-align:center;padding:18px 6px;font-size:14px;line-height:1.5}
+.hist{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
+.hist:last-child{border-bottom:0}
+.hist .ph{width:42px;height:42px;border-radius:50%;font-size:16px}
+.hist .t{flex:1}.hist .d{color:var(--muted);font-size:12px}
+.tok{font-family:Unbounded,sans-serif;font-size:12px;color:var(--mint)}
+.screen{display:none;animation:in .35s ease}.screen.on{display:block}
+@keyframes in{from{opacity:0;transform:translateY(10px)}}
+nav{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(12px + env(safe-area-inset-bottom));z-index:5;
+  width:calc(100% - 32px);max-width:448px;display:none;justify-content:space-around;padding:8px;border-radius:22px;
+  background:rgba(10,12,28,.72);border:1px solid var(--line);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
+nav.on{display:flex}
+nav button{flex:1;position:relative;background:none;border:0;color:var(--muted);font:600 11px Manrope,sans-serif;padding:6px 0;cursor:pointer}
+nav button span{display:block;font-size:19px;margin-bottom:2px}
+nav button.on{color:var(--mint)}
+nav .dot{position:absolute;top:2px;left:calc(50% + 8px);min-width:16px;height:16px;border-radius:8px;background:var(--pink);color:#05060f;font-size:10px;line-height:16px;display:none}
+.modal{position:fixed;inset:0;z-index:10;background:rgba(5,6,15,.94);display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
+.modal.on{display:flex;animation:in .3s ease}
+.qrwrap{background:#fff;border-radius:22px;padding:16px;box-shadow:0 0 0 2px var(--mint),0 0 40px rgba(46,200,255,.5)}
+.coin{width:160px;height:160px;border-radius:50%;display:grid;place-items:center;font-family:Unbounded,sans-serif;font-weight:700;font-size:30px;color:#05060f;
+  background:conic-gradient(var(--mint),var(--blue),var(--violet),var(--pink),var(--mint));
+  box-shadow:0 0 60px rgba(60,242,176,.6);animation:coin 1.2s ease-out,spin 6s linear infinite}
+.coin span{display:block;animation:spin 6s linear infinite reverse}
+@keyframes coin{from{transform:scale(0) rotate(-180deg)}}
+.modal h3{font-family:Unbounded,sans-serif;font-size:21px;margin:24px 0 8px}
+.modal .btn{max-width:300px}
+.toast{position:fixed;left:50%;top:16px;transform:translateX(-50%);z-index:20;background:#1a1d36;border:1px solid var(--line);
+  padding:12px 18px;border-radius:14px;font-size:14px;display:none;max-width:90%;text-align:center}
+.spinner{width:34px;height:34px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--mint);animation:spin 1s linear infinite;margin:60px auto}
+</style>
+</head>
+<body>
+<div class="sky"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="blob b4"></div></div>
+
+<div class="app">
+  <div class="logo">CONNECT MEET</div>
+  <div class="test">ТЕСТОВЫЙ РЕЖИМ · БЕЗ РЕАЛЬНЫХ ПЛАТЕЖЕЙ</div>
+
+  <section class="screen on" id="s-load"><div class="spinner"></div></section>
+
+  <section class="screen" id="s-outside">
+    <div class="card"><h1>Открой через Telegram</h1>
+      <p class="sub">Это приложение работает внутри бота. Найди его в Telegram и нажми «Открыть CONNECT MEET».</p></div>
+  </section>
+
+  <!-- анкета -->
+  <section class="screen" id="s-form">
+    <h1 id="formTitle">Расскажи о себе</h1>
+    <p class="sub">Анкету увидят люди рядом. Встречи только в общественных местах.</p>
+    <div class="card" style="margin-top:16px">
+      <label>Имя</label><input id="fName" maxlength="30">
+      <label>Возраст</label><input id="fAge" type="number" inputmode="numeric" min="18" max="99">
+      <label>Город</label><input id="fCity" maxlength="40">
+      <label>О себе</label><textarea id="fAbout" maxlength="300" placeholder="Чем занимаешься, что любишь"></textarea>
+    </div>
+    <button class="btn" onclick="saveProfile()">Сохранить</button>
+    <button class="btn ghost" id="formCancel" style="display:none" onclick="go('cab')">Отмена</button>
+  </section>
+
+  <!-- фото -->
+  <section class="screen" id="s-photo">
+    <h1>Добавь своё фото</h1>
+    <p class="sub">На фото должно быть хорошо видно твоё лицо. Его проверит модератор, после этого ты сможешь приглашать людей.</p>
+    <div class="card" style="margin-top:16px;text-align:center">
+      <div class="photo-pick" id="pick" onclick="document.getElementById('file').click()">Нажми,<br>чтобы выбрать фото</div>
+      <input type="file" id="file" accept="image/*" hidden onchange="pickPhoto(this)">
+    </div>
+    <button class="btn" id="sendPhoto" disabled onclick="uploadPhoto()">Отправить на проверку</button>
+    <button class="btn ghost" id="photoCancel" style="display:none" onclick="go('cab')">Отмена</button>
+  </section>
+
+  <!-- люди -->
+  <section class="screen" id="s-people">
+    <div id="peopleBanner"></div>
+    <h2>Люди</h2>
+    <div id="peopleList"></div>
+  </section>
+
+  <!-- встречи -->
+  <section class="screen" id="s-meet">
+    <div id="incomingBox"></div>
+    <h2>Договорились о встрече</h2>
+    <div id="matchList"></div>
+    <div id="outgoingBox"></div>
+  </section>
+
+  <!-- кабинет -->
+  <section class="screen" id="s-cab">
+    <div class="card" style="text-align:center">
+      <div class="ph lg" id="cPh" style="margin:0 auto"></div>
+      <h1 id="cName" style="margin:14px 0 4px"></h1>
+      <div class="lbl" id="cInfo"></div>
+      <div style="margin-top:12px" id="cStatus"></div>
+    </div>
+    <div class="card balance">
+      <div class="lbl">Мой баланс</div>
+      <div class="big"><span id="cMeet">0</span><small>MEET</small></div>
+      <div class="lbl">1 MEET за каждую подтверждённую встречу</div>
+    </div>
+    <div class="row2">
+      <button class="btn ghost" onclick="editProfile()">Изменить анкету</button>
+      <button class="btn ghost" onclick="changePhoto()">Сменить фото</button>
+    </div>
+    <h2>История встреч</h2>
+    <div class="card" id="cHist"></div>
+  </section>
+</div>
+
+<nav id="nav">
+  <button data-s="people" onclick="go('people')"><span>✦</span>Люди</button>
+  <button data-s="meet" onclick="go('meet')"><span>◎</span>Встречи<i class="dot" id="dotMeet"></i></button>
+  <button data-s="cab" onclick="go('cab')"><span>●</span>Кабинет</button>
+</nav>
+
+<!-- QR -->
+<div class="modal" id="mQr">
+  <div class="lbl" id="qrWho" style="margin-bottom:14px"></div>
+  <div class="qrwrap"><div id="qrBox"></div></div>
+  <p class="sub" style="margin-top:16px;max-width:300px">Пусть собеседник отсканирует этот код в своём CONNECT MEET. Вы должны быть рядом.</p>
+  <div class="lbl" id="qrTimer" style="margin-top:8px"></div>
+  <button class="btn ghost" onclick="closeQr()">Закрыть</button>
+</div>
+
+<!-- успех -->
+<div class="modal" id="mOk" onclick="this.classList.remove('on')">
+  <div class="coin"><span id="okNum">+1</span></div>
+  <h3>Встреча подтверждена!</h3>
+  <div class="sub" id="okWho" style="font-size:16px"></div>
+  <button class="btn">Отлично</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const tg = window.Telegram && Telegram.WebApp;
+const initData = tg ? tg.initData : '';
+if (tg) { try { tg.ready(); tg.expand(); tg.setHeaderColor('#05060f'); tg.setBackgroundColor('#05060f'); } catch(e){} }
+const $ = id => document.getElementById(id);
+let ME = null, current = 'load', qrTimerId = null;
+
+function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function haptic(t){ try { tg.HapticFeedback.notificationOccurred(t); } catch(e){} }
+function toast(t, bad){
+  const e = $('toast'); e.textContent = t; e.style.display = 'block';
+  clearTimeout(e._t); e._t = setTimeout(() => e.style.display = 'none', 3200);
+  if (bad) haptic('error');
+}
+async function call(name, body){
+  const headers = {'content-type':'application/json'};
+  if (initData) headers['x-init-data'] = initData;
+  if (window.DEV_USER) headers['x-dev-user'] = encodeURIComponent(JSON.stringify(window.DEV_USER));
+  const r = await fetch('/api/' + name, {method:'POST', headers, body: JSON.stringify(body || {})});
+  const j = await r.json().catch(() => ({error:'Сервер не отвечает'}));
+  if (!r.ok) throw new Error(j.error || 'Ошибка');
+  return j;
+}
+function phStyle(el, url, name){
+  el.style.backgroundImage = url ? `url("${url}")` : '';
+  el.textContent = url ? '' : (name || '?')[0].toUpperCase();
+}
+const MAIN = ['people','meet','cab'];
+function go(s){
+  current = s;
+  document.querySelectorAll('.screen').forEach(e => e.classList.toggle('on', e.id === 's-' + s));
+  $('nav').classList.toggle('on', MAIN.includes(s));
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.s === s));
+  window.scrollTo(0,0);
+  if (s === 'people') loadPeople();
+  if (s === 'meet') loadInvites();
+  if (s === 'cab') renderCab();
+}
+
+/* ---------- старт ---------- */
+async function start(){
+  if (!initData && !window.DEV_USER) return go('outside');
+  try { ME = (await call('me')).me; }
+  catch(e){ $('s-load').innerHTML = `<div class="card"><h1>Не удалось подключиться</h1><p class="sub">${esc(e.message)}</p><button class="btn" onclick="location.reload()">Попробовать ещё раз</button></div>`; return; }
+  route();
+  loadInvites(true);
+}
+function route(){
+  if (!ME.profileDone) return editProfile(true);
+  if (ME.photoStatus === 'none') return changePhoto(true);
+  go('people');
+}
+
+/* ---------- анкета ---------- */
+function editProfile(first){
+  $('fName').value = ME.profileDone ? ME.name : (ME.name || '');
+  $('fAge').value = ME.age || ''; $('fCity').value = ME.city || ''; $('fAbout').value = ME.about || '';
+  $('formTitle').textContent = first === true ? 'Расскажи о себе' : 'Моя анкета';
+  $('formCancel').style.display = first === true ? 'none' : 'block';
+  go('form');
+}
+async function saveProfile(){
+  try {
+    const wasDone = ME.profileDone;
+    ME = (await call('profile', {name:$('fName').value, age:$('fAge').value, city:$('fCity').value, about:$('fAbout').value})).me;
+    haptic('success');
+    if (!wasDone) changePhoto(true); else { toast('Анкета сохранена'); go('cab'); }
+  } catch(e){ toast(e.message, true); }
+}
+
+/* ---------- фото ---------- */
+let photoData = null;
+function changePhoto(first){
+  photoData = null; $('sendPhoto').disabled = true;
+  const p = $('pick'); p.style.backgroundImage = ''; p.innerHTML = 'Нажми,<br>чтобы выбрать фото';
+  $('photoCancel').style.display = first === true ? 'none' : 'block';
+  go('photo');
+}
+function pickPhoto(inp){
+  const f = inp.files && inp.files[0]; inp.value = '';
+  if (!f) return;
+  const img = new Image();
+  img.onload = () => {
+    const max = 900, k = Math.min(1, max / Math.max(img.width, img.height));
+    const c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    photoData = c.toDataURL('image/jpeg', .85);
+    const p = $('pick'); p.style.backgroundImage = `url("${photoData}")`; p.textContent = '';
+    $('sendPhoto').disabled = false;
+    URL.revokeObjectURL(img.src);
+  };
+  img.onerror = () => toast('Не получилось открыть это фото', true);
+  img.src = URL.createObjectURL(f);
+}
+async function uploadPhoto(){
+  if (!photoData) return;
+  const b = $('sendPhoto'); b.disabled = true; b.textContent = 'Отправляю…';
+  try {
+    ME = (await call('photo', {data: photoData})).me;
+    haptic('success');
+    toast(ME.photoStatus === 'approved' ? 'Фото сохранено' : 'Фото отправлено на проверку');
+    go('cab');
+  } catch(e){ toast(e.message, true); }
+  b.textContent = 'Отправить на проверку'; b.disabled = false;
+}
+
+/* ---------- люди ---------- */
+function statusHtml(){
+  const m = {none:['st-none','Фото не загружено'], pending:['st-pending','⏳ Фото на проверке'], approved:['st-approved','✓ Фото одобрено'], rejected:['st-rejected','✕ Фото отклонено']};
+  const [c, t] = m[ME.photoStatus] || m.none;
+  return `<span class="status ${c}">${t}</span>`;
+}
+async function loadPeople(){
+  $('peopleBanner').innerHTML = ME.photoStatus === 'approved' ? '' :
+    `<div class="card">${statusHtml()}<p class="sub" style="margin-top:10px">${ME.photoStatus === 'rejected'
+      ? 'Загрузи другое фото, где хорошо видно лицо.' : 'Пока фото проверяют, можно смотреть анкеты. Приглашать получится после одобрения.'}</p>
+      ${ME.photoStatus === 'rejected' ? '<button class="btn" onclick="changePhoto()">Загрузить другое фото</button>' : ''}</div>`;
+  try {
+    const {list} = await call('people');
+    $('peopleList').innerHTML = list.length ? list.map(p => `
+      <div class="card"><div class="person">
+        <div class="ph" style="${p.photo ? `background-image:url('${p.photo}')` : ''}">${p.photo ? '' : esc(p.name[0])}</div>
+        <div class="t"><div class="n">${esc(p.name)}, ${p.age}</div><div class="d">${esc(p.city)} · ${p.meet} MEET</div>
+          ${p.about ? `<div class="ab">${esc(p.about)}</div>` : ''}</div></div>
+        ${relButton(p)}</div>`).join('')
+      : '<div class="card empty">Пока здесь никого нет.<br>Позови друзей в бота, чтобы было с кем встретиться!</div>';
+  } catch(e){ toast(e.message, true); }
+}
+function relButton(p){
+  if (p.rel === 'match') return `<button class="btn ghost" onclick="go('meet')">Вы договорились · к встрече</button>`;
+  if (p.rel === 'sent') return `<div class="tagline">Приглашение отправлено</div>`;
+  if (p.rel === 'incoming') return `<button class="btn" onclick="go('meet')">Он(а) приглашает вас · ответить</button>`;
+  return `<button class="btn" ${ME.photoStatus !== 'approved' ? 'disabled' : ''} onclick="invite('${p.id}', this)">Пригласить познакомиться</button>`;
+}
+async function invite(id, btn){
+  btn.disabled = true;
+  try { await call('invite', {to:id}); haptic('success'); toast('Приглашение отправлено'); loadPeople(); }
+  catch(e){ toast(e.message, true); btn.disabled = false; }
+}
+
+/* ---------- встречи ---------- */
+async function loadInvites(silent){
+  try {
+    const d = await call('invites');
+    const dot = $('dotMeet'); dot.textContent = d.incoming.length; dot.style.display = d.incoming.length ? 'block' : 'none';
+    if (silent && current !== 'meet') return;
+    $('incomingBox').innerHTML = d.incoming.length ? '<h2>Тебя приглашают</h2>' + d.incoming.map(i => `
+      <div class="card">${personRow(i.user)}<div class="row2">
+        <button class="btn" onclick="answer('${i.id}',true)">Принять</button>
+        <button class="btn ghost" onclick="answer('${i.id}',false)">Отклонить</button></div></div>`).join('') : '';
+    $('matchList').innerHTML = d.matches.length ? d.matches.map(i => {
+      const wait = i.nextAt > Date.now();
+      return `<div class="card">${personRow(i.user)}
+        ${wait ? `<div class="tagline">Следующий MEET с этим человеком — ${new Date(i.nextAt).toLocaleString('ru-RU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div>`
+        : `<p class="sub" style="margin-top:12px">Встретились? Один показывает QR, второй сканирует. Нужно быть рядом и разрешить геолокацию.</p>
+          <div class="row2"><button class="btn" onclick="showQr('${i.id}','${esc(i.user.name)}')">Показать QR</button>
+          <button class="btn ghost" onclick="scanQr()">Сканировать</button></div>`}</div>`; }).join('')
+      : '<div class="card empty">Пока нет договорённостей.<br>Пригласи кого-нибудь во вкладке «Люди».</div>';
+    $('outgoingBox').innerHTML = d.outgoing.length ? '<h2>Ждут ответа</h2>' + d.outgoing.map(i => `<div class="card">${personRow(i.user)}<div class="tagline">Приглашение отправлено</div></div>`).join('') : '';
+  } catch(e){ if (!silent) toast(e.message, true); }
+}
+function personRow(p){
+  return `<div class="person"><div class="ph" style="${p.photo ? `background-image:url('${p.photo}')` : ''}">${p.photo ? '' : esc(p.name[0])}</div>
+    <div class="t"><div class="n">${esc(p.name)}, ${p.age}</div><div class="d">${esc(p.city)}</div></div></div>`;
+}
+async function answer(id, accept){
+  try { await call('answer', {id, accept}); haptic('success'); toast(accept ? 'Вы договорились! Встречайтесь в общественном месте' : 'Приглашение отклонено'); loadInvites(); }
+  catch(e){ toast(e.message, true); }
+}
+
+/* ---------- геолокация ---------- */
+function getLocation(){
+  return new Promise((resolve, reject) => {
+    const viaBrowser = () => {
+      if (!navigator.geolocation) return reject(new Error('Геолокация недоступна на этом устройстве'));
+      navigator.geolocation.getCurrentPosition(
+        p => resolve({lat:p.coords.latitude, lon:p.coords.longitude}),
+        () => reject(new Error('Разреши доступ к геолокации, чтобы подтвердить встречу')),
+        {enableHighAccuracy:true, timeout:15000, maximumAge:30000});
+    };
+    const lm = tg && tg.LocationManager;
+    if (lm && tg.isVersionAtLeast && tg.isVersionAtLeast('8.0')) {
+      const get = () => {
+        if (!lm.isLocationAvailable) return viaBrowser();
+        lm.getLocation(loc => {
+          if (loc) return resolve({lat:loc.latitude, lon:loc.longitude});
+          if (!lm.isAccessGranted) { try { lm.openSettings(); } catch(e){} }
+          reject(new Error('Разреши доступ к геолокации, чтобы подтвердить встречу'));
+        });
+      };
+      lm.isInited ? get() : lm.init(get);
+    } else viaBrowser();
+  });
+}
+
+/* ---------- QR ---------- */
+async function showQr(id, name){
+  try {
+    toast('Определяю геолокацию…');
+    const loc = await getLocation();
+    const d = await call('qr', {id, loc});
+    $('qrBox').innerHTML = '';
+    new QRCode($('qrBox'), {text:d.code, width:220, height:220, correctLevel:QRCode.CorrectLevel.M});
+    $('qrWho').textContent = 'Встреча с ' + name;
+    $('mQr').classList.add('on');
+    clearInterval(qrTimerId);
+    const tick = () => {
+      const s = Math.max(0, Math.round((d.exp - Date.now()) / 1000));
+      $('qrTimer').textContent = s ? `Код действует ещё ${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}` : 'Код устарел, открой новый';
+      if (!s) clearInterval(qrTimerId);
+    };
+    tick(); qrTimerId = setInterval(tick, 1000);
+    $('toast').style.display = 'none';
+  } catch(e){ toast(e.message, true); }
+}
+function closeQr(){ $('mQr').classList.remove('on'); clearInterval(qrTimerId); loadInvites(); }
+
+async function scanQr(){
+  if (!(tg && tg.showScanQrPopup && initData)) return toast('Сканер работает только в Telegram на телефоне', true);
+  let loc;
+  try { toast('Определяю геолокацию…'); loc = await getLocation(); $('toast').style.display = 'none'; }
+  catch(e){ return toast(e.message, true); }
+  tg.showScanQrPopup({text:'Наведи камеру на QR собеседника'}, text => {
+    if (!String(text).startsWith('cmeet:')) { toast('Это не QR от CONNECT MEET', true); return true; }
+    confirmMeet(text, loc);
+    return true;
+  });
+}
+async function confirmMeet(code, loc){
+  try {
+    const r = await call('confirm', {code, loc});
+    ME.meet = r.meet;
+    $('okNum').textContent = '+1';
+    $('okWho').textContent = 'Встреча с ' + r.with + ' · встреча №' + r.n;
+    $('mOk').classList.add('on');
+    haptic('success');
+    loadInvites();
+  } catch(e){ toast(e.message, true); }
+}
+
+/* ---------- кабинет ---------- */
+async function renderCab(){
+  phStyle($('cPh'), ME.ownPhoto, ME.name);
+  $('cName').textContent = ME.name;
+  $('cInfo').textContent = [ME.age && ME.age + ' лет', ME.city, ME.username && '@' + ME.username].filter(Boolean).join(' · ');
+  $('cStatus').innerHTML = statusHtml();
+  $('cMeet').textContent = ME.meet;
+  try {
+    ME = (await call('me')).me;
+    $('cMeet').textContent = ME.meet; $('cStatus').innerHTML = statusHtml(); phStyle($('cPh'), ME.ownPhoto, ME.name);
+    const {list} = await call('history');
+    $('cHist').innerHTML = list.length ? list.map(m => `<div class="hist">
+      <div class="ph" style="${m.photo ? `background-image:url('${m.photo}')` : ''}">${m.photo ? '' : esc(m.name[0])}</div>
+      <div class="t"><div>${esc(m.name)}</div><div class="d">${new Date(m.time).toLocaleString('ru-RU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div></div>
+      <div class="tok">+1 MEET</div></div>`).join('') : '<div class="empty">Встреч пока не было</div>';
+  } catch(e){}
+}
+
+document.addEventListener('visibilitychange', () => { if (!document.hidden && ME) { if (MAIN.includes(current)) go(current); else loadInvites(true); } });
+start();
+</script>
+</body>
+</html>

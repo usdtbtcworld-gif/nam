@@ -1,0 +1,13 @@
+{
+  "name": "connect-meet",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CONNECT MEET — Telegram-бот знакомств с подтверждением встреч по QR и геолокации",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
